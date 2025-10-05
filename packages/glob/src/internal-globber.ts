@@ -146,7 +146,9 @@ export class DefaultGlobber implements Globber {
 
         // Push the child items in reverse
         const childLevel = item.level + 1
-        const childItems = (await fs.promises.readdir(item.path)).map(
+        const entries = await fs.promises.readdir(item.path)
+        core.info(`Glob.readdir: path='${item.path}', entries=${JSON.stringify(entries)}`)
+        const childItems = entries.map(
           x => new SearchState(path.join(item.path, x), childLevel)
         )
         stack.push(...childItems.reverse())
@@ -185,6 +187,11 @@ export class DefaultGlobber implements Globber {
     }
 
     result.searchPaths.push(...patternHelper.getSearchPaths(result.patterns))
+
+    // Log patterns and computed search paths for diagnostics
+    core.info(`Glob.create: patterns='${patterns}'`)
+    core.info(`Glob.create: lines=${JSON.stringify(lines.filter(Boolean))}`)
+    core.info(`Glob.create: searchPaths=${JSON.stringify(result.searchPaths)}`)
 
     return result
   }
